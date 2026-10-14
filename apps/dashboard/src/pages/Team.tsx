@@ -143,7 +143,7 @@ export function TeamPage() {
             <li key={key.id} className="flex flex-wrap items-center gap-3 py-3 text-sm">
               <div className="min-w-0 flex-1">
                 <div className="font-medium">{key.name}</div>
-                <div className="font-mono text-xs text-ink-soft">{key.keyPrefix}… · {key.userEmail} · {formatWhen(key.createdAt)}</div>
+                <div className="break-all font-mono text-xs text-ink-soft">{key.keyPrefix}… · {key.userEmail} · {formatWhen(key.createdAt)}</div>
               </div>
               {key.revokedAt ? <Badge tone="bad">Revoked {formatWhen(key.revokedAt)}</Badge> : <Badge tone="ok">Active</Badge>}
               {!key.revokedAt ? <Button variant="outline" size="sm" onClick={() => void revoke(key.id)}>Revoke</Button> : null}

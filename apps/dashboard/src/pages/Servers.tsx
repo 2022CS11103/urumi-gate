@@ -190,14 +190,14 @@ export function ServersPage() {
             {server.lastError && server.status === "unreachable" ? (
               <p className="mt-2 text-sm text-warn">{server.lastError}</p>
             ) : null}
-            {user.role === "admin" && server.url ? <p className="mt-1 font-mono text-xs text-ink-soft">{server.url}</p> : null}
+            {user.role === "admin" && server.url ? <p className="mt-1 break-all font-mono text-xs text-ink-soft">{server.url}</p> : null}
             {expanded === server.id ? (
               <ul className="mt-3 space-y-2">
                 {server.tools.length === 0 ? <li className="text-sm text-ink-soft">No tools recorded from the last probe.</li> : null}
                 {server.tools.map((tool) => (
                   <li key={tool.name} className="rounded-md border border-line bg-paper-2 px-3 py-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-sm">{tool.name}</span>
+                      <span className="min-w-0 break-all font-mono text-sm">{tool.name}</span>
                       {tool.write ? <Badge tone="seal">Write</Badge> : <Badge>Read</Badge>}
                       {!tool.allowed ? <Badge tone="neutral">Hidden from you</Badge> : null}
                       {tool.suspicious ? <Badge tone="bad">Suspicious description</Badge> : null}

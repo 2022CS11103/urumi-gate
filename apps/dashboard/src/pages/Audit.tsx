@@ -77,7 +77,7 @@ export function AuditPage() {
               <Badge tone={entry.success ? "ok" : "bad"}>{entry.success ? "ok" : "failed"}</Badge>
             </div>
             <p className="mt-1">{entry.userEmail} · {entry.source}</p>
-            <p className="mt-1 font-mono text-xs">{entry.toolName}</p>
+            <p className="mt-1 break-all font-mono text-xs">{entry.toolName}</p>
             <p className="text-xs text-ink-soft">{entry.serverSlug} · {entry.durationMs} ms</p>
           </li>
         ))}

@@ -71,7 +71,7 @@ export function Shell() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+      <main className="mx-auto min-w-0 max-w-6xl px-4 py-6 sm:px-6">
         {user?.storeMode === "fixture" ? (
           <p className="mb-4 rounded-md border border-line bg-paper-2 px-3 py-2 text-sm text-ink-soft">
             The WooCommerce tools are on the local fixture store. Deploy the Helm chart to point the same server at a
