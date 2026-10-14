@@ -1,0 +1,38 @@
+# k3s defaults: Traefik ingress and the local-path storage class.
+# Replace the hosts before installing. TLS expects a cert-manager ClusterIssuer named letsencrypt.
+storageClass: local-path
+
+ingress:
+  className: traefik
+  controllerNamespace: kube-system
+  dashboardHost: gate.example.com
+  storeHost: store.example.com
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  tls:
+    enabled: true
+    secretName: urumi-tls
+
+wordpress:
+  url: https://store.example.com
+  storage: 10Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+gateway:
+  cookieSecure: true
+
+mariadb:
+  storage: 10Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 1Gi

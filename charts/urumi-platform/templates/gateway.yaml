@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "urumi.fullname" . }}-gateway
+  labels:
+    {{- include "urumi.labels" . | nindent 4 }}
+    app.kubernetes.io/name: gateway
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: gateway
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "urumi.fullname" . }}-gateway
+  labels:
+    {{- include "urumi.labels" . | nindent 4 }}
+    app.kubernetes.io/name: gateway
+spec:
+  replicas: {{ .Values.gateway.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "urumi.labels" . | nindent 8 }}
+        app.kubernetes.io/name: gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: /metrics
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: gateway
+          image: {{ .Values.gateway.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: HOME
+              value: /tmp
+            - name: DATABASE_PATH
+              value: /data/gateway.sqlite
+            - name: STORE_MODE
+              value: woocommerce
+            - name: PUBLIC_STORE_URL
+              value: {{ .Values.wordpress.url | quote }}
+            - name: COOKIE_SECURE
+              value: {{ .Values.gateway.cookieSecure | quote }}
+            - name: TOOL_EXPOSURE
+              value: {{ .Values.gateway.toolExposure | quote }}
+            - name: RATE_LIMIT_PER_MINUTE
+              value: {{ .Values.gateway.rateLimitPerMinute | quote }}
+            - name: LLM_BASE_URL
+              value: {{ .Values.gateway.llm.baseUrl | quote }}
+            - name: LLM_MODEL
+              value: {{ .Values.gateway.llm.model | quote }}
+            - name: SELF_HOSTS
+              value: {{ printf "%s,%s-gateway" .Values.ingress.dashboardHost (include "urumi.fullname" .) | quote }}
+            - name: WOO_MCP_URL
+              value: http://{{ include "urumi.fullname" . }}-woo-mcp:8080/mcp
+            - name: FX_MCP_URL
+              value: http://{{ include "urumi.fullname" . }}-fx-mcp:8080/mcp
+            - name: OPS_MCP_URL
+              value: http://{{ include "urumi.fullname" . }}-ops-mcp:8080/mcp
+            {{- range $key, $envName := dict
+              "credential-key" "CREDENTIAL_KEY"
+              "session-secret" "SESSION_SECRET"
+              "admin-email" "ADMIN_EMAIL"
+              "admin-password" "ADMIN_PASSWORD"
+              "member-email" "MEMBER_EMAIL"
+              "member-password" "MEMBER_PASSWORD"
+              "woo-mcp-token" "WOO_MCP_TOKEN"
+              "fx-mcp-token" "FX_MCP_TOKEN"
+              "ops-mcp-token" "OPS_MCP_TOKEN"
+              "llm-api-key" "LLM_API_KEY"
+            }}
+            - name: {{ $envName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.credentials.existingSecret }}
+                  key: {{ $key }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.gateway.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "urumi.fullname" . }}-gateway
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "urumi.fullname" . }}-gateway
+  labels:
+    {{- include "urumi.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.gateway.storage }}

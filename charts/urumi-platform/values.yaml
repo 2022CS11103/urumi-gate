@@ -1,0 +1,93 @@
+credentials:
+  existingSecret: urumi-credentials
+
+storageClass: ""
+
+imagePullPolicy: IfNotPresent
+
+ingress:
+  className: nginx
+  controllerNamespace: ingress-nginx
+  dashboardHost: gate.urumi.local
+  storeHost: store.urumi.local
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: urumi-tls
+
+networkPolicy:
+  enabled: true
+  # The gateway may call an external language-model API on 443.
+  # Link-local and private ranges are excluded from that path.
+  gatewayExternalHttps: true
+
+mariadb:
+  image: mariadb:11.4
+  storage: 5Gi
+  database: woocommerce
+  user: woocommerce
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+
+wordpress:
+  image: urumi/wordpress:0.1.0
+  url: http://store.urumi.local
+  title: Northwind Supply
+  adminUser: admin
+  adminEmail: admin@urumi.local
+  storage: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+
+mcp:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 192Mi
+  woo:
+    image: urumi/woo-mcp:0.1.0
+  fx:
+    image: urumi/fx-mcp:0.1.0
+  ops:
+    image: urumi/ops-mcp:0.1.0
+
+gateway:
+  image: urumi/gateway:0.1.0
+  replicas: 1
+  storage: 1Gi
+  cookieSecure: false
+  toolExposure: flat
+  rateLimitPerMinute: 60
+  llm:
+    baseUrl: https://api.openai.com/v1
+    model: gpt-4o-mini
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+dashboard:
+  image: urumi/dashboard:0.1.0
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 192Mi

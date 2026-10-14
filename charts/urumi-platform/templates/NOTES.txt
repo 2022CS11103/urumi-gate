@@ -1,0 +1,16 @@
+Urumi Gate is installed in {{ .Release.Namespace }}.
+
+Dashboard:  http{{ if .Values.ingress.tls.enabled }}s{{ end }}://{{ .Values.ingress.dashboardHost }}
+Storefront: http{{ if .Values.ingress.tls.enabled }}s{{ end }}://{{ .Values.wordpress.url | trimPrefix "https://" | trimPrefix "http://" }}
+
+The WooCommerce MCP server, the exchange-rate server, and the operations server are ClusterIP only.
+External MCP clients use the dashboard host:
+
+  {{ if .Values.ingress.tls.enabled }}https{{ else }}http{{ end }}://{{ .Values.ingress.dashboardHost }}/mcp
+
+Read the bootstrap passwords:
+
+  kubectl -n {{ .Release.Namespace }} get secret {{ .Values.credentials.existingSecret }} -o jsonpath='{.data.admin-password}' | base64 -d; echo
+  kubectl -n {{ .Release.Namespace }} get secret {{ .Values.credentials.existingSecret }} -o jsonpath='{.data.member-password}' | base64 -d; echo
+
+Gateway replicas are {{ .Values.gateway.replicas }}. Keep this at 1 while the gateway database is SQLite on a single volume.

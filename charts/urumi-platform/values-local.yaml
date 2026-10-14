@@ -1,0 +1,22 @@
+storageClass: standard
+
+ingress:
+  className: nginx
+  controllerNamespace: ingress-nginx
+  dashboardHost: gate.urumi.local
+  storeHost: store.urumi.local
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+  tls:
+    enabled: false
+
+wordpress:
+  url: http://store.urumi.local
+  storage: 2Gi
+
+gateway:
+  cookieSecure: false
+
+mariadb:
+  storage: 2Gi

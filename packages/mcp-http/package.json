@@ -1,0 +1,6 @@
+{
+  "name": "@urumi/mcp-http",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0"
+}

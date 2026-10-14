@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Helm
+        run: |
+          curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz | tar -xz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+      - run: npm test
+      - run: npm install
+        working-directory: apps/dashboard
+      - run: npx tsc --noEmit
+        working-directory: apps/dashboard
+      - run: helm lint charts/urumi-platform
+      - run: helm template urumi charts/urumi-platform -f charts/urumi-platform/values-local.yaml >/dev/null
+      - run: helm template urumi charts/urumi-platform -f charts/urumi-platform/values-prod.yaml >/dev/null
